@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/dsapandora/fuerte_workspace/sandbox/andreita/src/hola.cpp
+stdlib.h
+-
+stdio.h
+-
+string.h
+-
+iostream
+-
+

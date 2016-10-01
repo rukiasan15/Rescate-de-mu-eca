@@ -1,0 +1,330 @@
+#include <iostream>
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "std_msgs/String.h"
+#include <sstream> 
+#include <ros/ros.h>
+
+using namespace cv;
+using namespace std;
+ros::Publisher ver;
+ros::Publisher mov;
+
+
+
+string colores;
+
+
+
+int i=0, j=0;
+
+
+void myplan(const std_msgs::String::ConstPtr& msg)
+{
+
+colores=msg->data.c_str();
+
+ROS_INFO_STREAM(colores);
+
+}
+
+
+ int main( int argc, char** argv )
+ {
+
+
+colrores="rosado";
+
+ros::init(argc, argv, "camara");
+    /**
+    * NodeHandle is the main access point to communications with the ROS system.
+    * The first NodeHandle constructed will fully initialize this node, and the last
+    * NodeHandle destructed will close down the node.
+    */
+    ros::NodeHandle nh;
+
+ ver = nh.advertise<std_msgs::String>("/veo", 1000);
+mov = nh.advertise<std_msgs::String>("/semueve", 1000);
+
+ ros::Subscriber jo = nh.subscribe("/plan", 1000, myplan);
+
+VideoCapture cap(0);
+
+if ( !cap.isOpened() )  // if not success, exit program
+    {
+         cout << "Cannot open the web cam" << endl;
+         return -1;
+    }
+
+
+ 
+
+ int iLowH = 0;
+ int iHighH = 10;
+
+  int iLowS = 100; 
+ int iHighS = 255;
+
+  int iLowV = 100;
+ int iHighV = 255;
+
+  //Create trackbars in "Control" window
+ createTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
+ createTrackbar("HighH", "Control", &iHighH, 179);
+
+  createTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
+ createTrackbar("HighS", "Control", &iHighS, 255);
+
+  createTrackbar("LowV", "Control", &iLowV, 255);//Value (0 - 255)
+ createTrackbar("HighV", "Control", &iHighV, 255);
+
+
+int iLastX = -1; 
+int iLastY = -1;
+
+
+
+
+
+  //Capture a temporary image from the camera
+ Mat imgTmp;
+ cap.read(imgTmp); 
+
+  //Create a black image with the size as the camera output
+ Mat imgLines = Mat::zeros( imgTmp.size(), CV_8UC3 );;
+ 
+
+
+
+if(colores=="rosado") { iLowH=160; iLowS=100; iLowV=100; iHighH=179; iHighS=255; iHighV=255; }
+if(colores=="naranja") { iLowH=0; iLowS=100; iLowV=100; iHighH=10; iHighS=255; iHighV=255; }
+if(colores=="verde") { iLowH=49; iLowS=50; iLowV=50; iHighH=80; iHighS=255; iHighV=255; }
+if(colores=="negro") { iLowH=0; iLowS=0; iLowV=0; iHighH=12; iHighS=255; iHighV=255; }
+if(colores=="amarillo") { iLowH=15; iLowS=50; iLowV=50; iHighH=40; iHighS=255; iHighV=255; }
+if(colores=="rojo") { iLowH=0; iLowS=65; iLowV=75; iHighH=12; iHighS=255; iHighV=255; }
+
+
+    while (true)
+    {
+        Mat imgOriginal;
+
+        bool bSuccess = cap.read(imgOriginal); // read a new frame from video
+
+
+
+         if (!bSuccess) //if not success, break loop
+        {
+             cout << "Cannot read a frame from video stream" << endl;
+             break;
+        }
+
+    Mat imgHSV;
+
+   cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+ 
+  Mat imgThresholded, rosado, amarillo, verde;
+
+   inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
+   inRange(imgHSV, Scalar(160, 100, 100), Scalar(179, 255, 255), rosado);
+   inRange(imgHSV, Scalar(15, 50, 50), Scalar(40, 255, 255), amarillo);
+   inRange(imgHSV, Scalar(49, 50, 50), Scalar(80, 255, 255), verde);
+
+      
+  //morphological opening (removes small objects from the foreground)
+  erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+  dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+  erode(rosado, rosado, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+  dilate( rosado, rosado, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+
+  erode(amarillo, amarillo, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+  dilate( amarillo, amarillo, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+
+  erode(verde, verde, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+  dilate( verde, verde, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+
+
+   //morphological closing (removes small holes from the foreground)
+  dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+  erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+
+  dilate( rosado, rosado, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+  erode(rosado, rosado, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+  dilate( amarillo, amarillo, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+  erode(amarillo, amarillo, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+  dilate( verde, verde, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+  erode(verde, verde, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+   //Calculate the moments of the thresholded image
+  Moments oMoments = moments(imgThresholded);
+  Moments oRosado = moments(rosado);
+  Moments oAmarillo = moments(amarillo);
+  Moments oVerde = moments(verde);
+
+  double aArea = oAmarillo.m00;
+  double vArea = oVerde.m00;
+  double rArea = oRosado.m00;
+
+
+  double aM10 = oAmarillo.m10;
+  double vM10 = oVerde.m10;
+  double rM10 = oRosado.m10;
+
+   double dM01 = oMoments.m01;
+  double dM10 = oMoments.m10;
+  double dArea = oMoments.m00;
+	srand(time(0));
+
+
+	ros::Rate rate(2);
+
+std_msgs::String gi;
+std::stringstream si;
+
+   int AposX = aM10 / aArea;
+   int VposX = vM10 / vArea;
+   int RposX = rM10 / rArea;
+
+if( dArea<=10000) 
+{ 
+
+if(rArea > 10000)
+{	if(RposX > 328){ 
+         si <<"obsDERE"; ROS_INFO_STREAM("rosado"); 
+        }else{
+         if(RposX < 326) { 
+            si <<"evitarI"; ROS_INFO_STREAM("rosado");}
+         else { 
+             si<<"no veo un color"; 
+        }
+
+        }	
+        
+}
+
+
+if(aArea > 10000)
+{	if(AposX > 328){ 
+         si <<"obsDERE"; ROS_INFO_STREAM("amarillo"); 
+        }else{
+         if(AposX < 326) { 
+            si <<"evitarI"; ROS_INFO_STREAM("amarilo");}
+         else { 
+             si<<"no veo un color"; 
+        }
+
+        }	
+        
+if(vArea > 10000)
+{	if(VposX > 328){ 
+         si <<"obsDERE"; ROS_INFO_STREAM("verde"); 
+        }else{
+         if(VposX < 326) { 
+            si <<"evitarI"; ROS_INFO_STREAM("verde");}
+         else { 
+             si<<"no veo un color"; 
+        }
+
+        }	
+        
+}
+
+
+
+}
+
+    gi.data = si.str();
+mov.publish(gi);
+
+ }        
+
+
+
+
+   // if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero 
+  if (dArea > 10000)
+  { 
+ROS_INFO_STREAM(colores);        
+
+   //calculate the position of the ball
+   int posX = dM10 / dArea;
+   int posY = dM01 / dArea;        
+   if (iLastX >= 0 && iLastY >= 0 && posX >= 0 && posY >= 0)
+   {
+    //Draw a red line from the previous point to the current point
+    line(imgLines, Point(posX, posY), Point(iLastX, iLastY), Scalar(0,0,255), 2);
+
+}
+
+if(posY>405)
+{ si <<"no veo un color";
+    gi.data = si.str();
+mov.publish(gi); }
+
+
+if(posX>=315 && posX<=380)
+{ si <<"no";
+    gi.data = si.str();
+mov.publish(gi); }
+
+if(posX>385)
+{
+//ROS_INFO_STREAM("izquierda");
+    si <<"izquierda";
+    gi.data = si.str();
+mov.publish(gi);
+}
+
+if(posX<310)
+{
+//ROS_INFO_STREAM("derecha");
+    si <<"derecha";
+    gi.data = si.str();
+mov.publish(gi);
+}
+
+
+
+     iLastX = posX;
+   iLastY = posY;
+  }
+//aqui termina el dibujado del seguimiento
+
+if(aArea <= 10000 && vArea <= 10000 && rArea <= 10000 && dArea <= 10000)
+ { std_msgs::String st;
+ROS_INFO_STREAM("NO VEO UN COLOR");
+    std::stringstream sp;
+    sp << "no veo un color";
+    st.data = sp.str();
+ver.publish(st);
+
+
+}
+
+imgThresholded = imgThresholded + rosado + verde + amarillo;
+
+   imshow("Thresholded Image", imgThresholded); //show the thresholded image
+//   imshow("Amarillo", amarillo);
+
+   imgOriginal = imgOriginal + imgLines;
+  imshow("Original", imgOriginal); //show the original image
+
+        if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
+       {
+            cout << "esc key is pressed by user" << endl;
+            break; 
+       }
+    }
+
+
+
+
+
+			
+
+
+   return 0;
+}

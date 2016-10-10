@@ -71,18 +71,18 @@ void observo(const std_msgs::String::ConstPtr& msg)
                 pub.publish(mes);
 
 
-                if(largo=="obsDERE") { mes.angular.z=-1.0; mes.linear.x= 0.0; //ROS_INFO_STREAM("I");
+                if(largo=="obsDERE") { mes.angular.z=-0.5; mes.linear.x= 0.0; //ROS_INFO_STREAM("I");
                 }
-                if(largo=="evitarI") { mes.angular.z=1.0; mes.linear.x= 0.0; //ROS_INFO_STREAM("D");
+                if(largo=="evitarI") { mes.angular.z=0.5; mes.linear.x= 0.0; //ROS_INFO_STREAM("D");
                 }
 
                 if(largo=="izquierda")         //izquierda
 
-                { mes.angular.z = 1.0; mes.linear.x=0.1;   ROS_INFO_STREAM("izquierda");  }
+                { mes.angular.z = -0.5; mes.linear.x=0.1;   ROS_INFO_STREAM("izquierda");  }
 
                 if(largo=="derecha")         //derecha
 
-                { mes.angular.z = -1.0; mes.linear.x=0.1;  ROS_INFO_STREAM("derecha"); }
+                { mes.angular.z = 0.5; mes.linear.x=0.1;  ROS_INFO_STREAM("derecha"); }
 
                 if(largo=="no")
                 { mes.angular.z=0.0;  mes.linear.x=0.1; ROS_INFO_STREAM("centro"); }
@@ -104,14 +104,14 @@ void next(const std_msgs::String::ConstPtr& msg)
 
 void sonar_derecho (const sensor_msgs::PointCloud::ConstPtr& msg)
 {
-        moves="NO";
+        
         float dataxD=msg->points[0].x;
         geometry_msgs::Twist mv;
         //mv.linear.x=0.1;
 
         if(dataxD < 0.40 || dataxC < 0.22)
-        {
-                mv.angular.z= 1.0;
+        {		moves="NO";
+                mv.angular.z= 0.5;
                 mv.linear.x=0.0;
 
 
@@ -123,14 +123,14 @@ void sonar_derecho (const sensor_msgs::PointCloud::ConstPtr& msg)
 }
 void sonar_izquierdo (const sensor_msgs::PointCloud::ConstPtr& msg)
 {
-        moves="NO";
+        
         float dataxI=msg->points[0].x;
         geometry_msgs::Twist mv;
         //mv.linear.x=0.1;
 
         if(dataxI < 0.40)
-        {
-                mv.angular.z= -1.0;
+        {	moves="NO";
+                mv.angular.z= -0.5;
                 mv.linear.x=0.0;
 
 
@@ -188,7 +188,7 @@ int main(int argc, char ** argv) {
 
 
     msg.linear.x= 0.0;
-    msg.angular.z = 1.0;
+    msg.angular.z = 0.5;
 
 
 

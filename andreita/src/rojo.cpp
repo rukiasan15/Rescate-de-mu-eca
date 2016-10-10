@@ -67,8 +67,8 @@ int main( int argc, char** argv )
                 int posX = dM10 / dArea;
                 int posY = dM01 / dArea;
 
-                Mat dist;
-                magnitude(posX, posY, dist);
+                // Mat dist;
+                // magnitude(posX, posY, dist);
 
                 imshow("Thresholded Image", imgThresholded); //show the thresholded image
                 imshow("Original", imgOriginal); //show the original image

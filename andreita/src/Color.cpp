@@ -25,16 +25,6 @@ image_transport::Publisher pub;
 ros::Publisher ver;
 ros::Publisher mov;
 
-int global_min_threshold=50;
-int global_squareness_ratio=20;
-
-void update_global_min_threshold(int,void*) {
-        //do nothing
-}
-
-void update_global_squareness_ratio(int,void*) {
-        //do nothing
-}
 
 using namespace cv;
 
@@ -56,8 +46,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
                 return;
         }
 
-        int iLowH = 0;
-        int iHighH = 10;
+        int iLowH = 160;
+        int iHighH = 179;
 
         int iLowS = 100;
         int iHighS = 255;
@@ -76,15 +66,6 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
    }*/
 
 
-        //Create trackbars in "Control" window
-        createTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
-        createTrackbar("HighH", "Control", &iHighH, 179);
-
-        createTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
-        createTrackbar("HighS", "Control", &iHighS, 255);
-
-        createTrackbar("LowV", "Control", &iLowV, 255); //Value (0 - 255)
-        createTrackbar("HighV", "Control", &iHighV, 255);
 
 
 
@@ -133,11 +114,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
                 std_msgs::String gi;
                 std::stringstream si;
 
-                if(posY>405)
-                { si <<"no veo un color";
-                  gi.data = si.str();
-                  mov.publish(gi); }
 
+                ROS_INFO_STREAM("veo un color");
 
                 if(posX>=315 && posX<=380)
                 { si <<"no";

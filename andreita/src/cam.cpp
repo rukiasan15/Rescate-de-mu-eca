@@ -242,10 +242,12 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
    int BposX = aM10 / aArea;
 
  *
-                   //  if(dArea>600000) {ROS_INFO("hola"); }
+                   //  if(dArea>10000) {ROS_INFO("hola"); }
 
  */
-                /*if(aArea > 800000)
+                
+                //CIRCULO AMARILLO
+                /*if(aArea > 10000)
                    {
 
                         cv::Mat contAMARILLO = azul.clone();
@@ -286,13 +288,13 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 //si el area del color a buscar es menor a 800000 entonces no estoy viendo el color que estoy buscando
 //y tiene que esquivar los demás porque no debe ir alla
 
-                if( dArea<=800000)
+                if( dArea<=10000)
                 {
                         //  si<<"no veo un color";
 
 
                         //ROSADO
-                        if(rArea > 800000)
+                        if(rArea > 10000)
                         {
 
                                 //hace un clon de la imagen de rosado en contROSADO
@@ -341,7 +343,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 
                         //VERDE
 
-                        if(vArea > 800000)
+                        if(vArea > 10000)
                         {
                                 cv::Mat contVERDE = verde.clone();
                                 cv::findContours( contVERDE, contoV, CV_RETR_LIST, CV_CHAIN_APPROX_NONE );
@@ -379,7 +381,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 
                         //ROJO
 
-                        if(nArea > 800000)
+                        if(nArea > 10000)
                         {
                                 cv::Mat contROJO = rojo.clone();
                                 cv::findContours( contROJO, contoN, CV_RETR_LIST, CV_CHAIN_APPROX_NONE );
@@ -412,7 +414,10 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
                                 }
                         }
 
-/*                        if(bArea > 800000)
+/*                        
+                        //AZUL
+
+                        if(bArea > 10000)
                         {
                                 cv::Mat contAZUL = azul.clone();
                                 cv::findContours( contAZUL, contoB, CV_RETR_LIST, CV_CHAIN_APPROX_NONE );
@@ -455,7 +460,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 
 // if the area <= 800000, I consider that the there are no object in the image and it's because of the noise, the area is not zero
 
-                if (dArea > 800000)
+                if (dArea > 10000)
                 {
 
                         //clona imgThresholdeden contourOutput

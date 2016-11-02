@@ -18,6 +18,7 @@ string largo;
 string moves="YES", ex="OFF";
 int i=0;
 float dataxC=1;
+
 void observo(const std_msgs::String::ConstPtr& msg)
 {
 
@@ -38,7 +39,7 @@ void observo(const std_msgs::String::ConstPtr& msg)
    ROS_INFO_STREAM("veo un color");
 
    }
- */
+ *//*
         if(largo=="no veo un color")
         {
                 mes.linear.x= 0.0; mes.angular.z=0.0;
@@ -47,19 +48,20 @@ void observo(const std_msgs::String::ConstPtr& msg)
                 moves="NO";
 
         }
+ */
+
         if(ex=="ON")
         { moves="NO";
           i++;
           ROS_INFO_STREAM("buscando");
           ROS_INFO_STREAM(i);
-
           mes.linear.x=0.0;
           mes.angular.z=0.5;
-          pub.publish(mes);
+          //  pub.publish(mes);
 
-          if(i>20)
+          if(i>10)
           {
-                  if(largo=="no" || largo=="izquierda" || largo=="derecha" || i>20000)
+                  if(largo=="no" || largo=="izquierda" || largo=="derecha" || i>200)
                   {i=0;  moves="YES"; ex="OFF"; }
           }}
 
@@ -68,26 +70,26 @@ void observo(const std_msgs::String::ConstPtr& msg)
 
                 mes.linear.x=0.1;
                 mes.angular.z=0.0;
-                pub.publish(mes);
 
 
-                if(largo=="obsDERE") { mes.angular.z=-0.5; mes.linear.x= 0.0; //ROS_INFO_STREAM("I");
-                }
-                if(largo=="evitarI") { mes.angular.z=0.5; mes.linear.x= 0.0; //ROS_INFO_STREAM("D");
-                }
+                ROS_INFO_STREAM("estoy viendo");
+
+
+                if(largo=="obsDERE") { mes.angular.z=-0.5; mes.linear.x= 0.0; ROS_INFO_STREAM("I"); }
+                if(largo=="evitarI") { mes.angular.z=0.5; mes.linear.x= 0.0; ROS_INFO_STREAM("D"); }
 
                 if(largo=="izquierda")         //izquierda
 
-                { mes.angular.z = -0.5; mes.linear.x=0.1;   ROS_INFO_STREAM("izquierda");  }
+                { mes.angular.z = 0.5; mes.linear.x=0.1;   ROS_INFO_STREAM("izquierda");  }
 
                 if(largo=="derecha")         //derecha
 
-                { mes.angular.z = 0.5; mes.linear.x=0.1;  ROS_INFO_STREAM("derecha"); }
+                { mes.angular.z = -0.5; mes.linear.x=0.1;  ROS_INFO_STREAM("derecha"); }
 
                 if(largo=="no")
                 { mes.angular.z=0.0;  mes.linear.x=0.1; ROS_INFO_STREAM("centro"); }
 
-                pub.publish(mes);
+                //    pub.publish(mes);
         }
 
 
@@ -104,41 +106,42 @@ void next(const std_msgs::String::ConstPtr& msg)
 
 void sonar_derecho (const sensor_msgs::PointCloud::ConstPtr& msg)
 {
-        
+
         float dataxD=msg->points[0].x;
         geometry_msgs::Twist mv;
-        //mv.linear.x=0.1;
+        //      mv.linear.x=0.1;
 
-        if(dataxD < 0.40 || dataxC < 0.22)
-        {		moves="NO";
-                mv.angular.z= 0.5;
-                mv.linear.x=0.0;
+        if(ex=="OFF")
+        {  if(dataxD < 0.4 || dataxC < 0.22)
+           {
+                   ROS_INFO_STREAM("esquivar");
+                   moves="NO";
+                   mv.angular.z= 0.5;
+                   mv.linear.x=0.0;
 
+                   //   pub.publish(mv);
+           }}
 
-        }
-        if(ex=="ON")
-        {
-                pub.publish(mv);
-        }
 }
 void sonar_izquierdo (const sensor_msgs::PointCloud::ConstPtr& msg)
 {
-        
+
         float dataxI=msg->points[0].x;
         geometry_msgs::Twist mv;
-        //mv.linear.x=0.1;
+        //    mv.linear.x=0.1;
 
-        if(dataxI < 0.40)
-        {	moves="NO";
+        if(dataxI < 0.4 && ex=="OFF")
+        {
+                ROS_INFO_STREAM("esquivar");
+
+                moves="NO";
                 mv.angular.z= -0.5;
                 mv.linear.x=0.0;
 
+                //    pub.publish(mv);
 
         }
-        if(ex=="ON")
-        {
-                pub.publish(mv);
-        }
+
 }
 
 void sonar_centro (const sensor_msgs::PointCloud::ConstPtr& msg)
@@ -161,7 +164,6 @@ int main(int argc, char ** argv) {
         pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1000);
         dragon = nh.advertise<std_msgs::String>("/lleg", 1000);
         //estrellita = nh.advertise<std_msgs::String>("/wander", 1000);
-
 
         //crear subscriber
 
@@ -188,7 +190,7 @@ int main(int argc, char ** argv) {
 
 
     msg.linear.x= 0.0;
-    msg.angular.z = 0.5;
+    msg.angular.z = 1.0;
 
 
 

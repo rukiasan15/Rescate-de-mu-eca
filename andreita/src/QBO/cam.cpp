@@ -25,7 +25,11 @@ namespace enc = sensor_msgs::image_encodings;
 using namespace cv;
 using namespace std;
 
-void centro (bool,bool,bool,bool);
+void centro (int,int,int,int);
+
+void esquivar_izquierda(int);
+
+void esquivar_derecha(int);
 
 //Declare a string with the name of the window that we will create using OpenCV where processed images will be displayed.
 static const char WINDOW[] = "Image Processed";
@@ -51,8 +55,11 @@ int iHighS = 255;
 int iLowV = 100;
 int iHighV = 255;
 
-bool x=false, x2=false, y=false, y2=false;
+int x=NULL, x2=NULL, y=NULL, y2=NULL;
 
+
+       
+//int RposX=NULL, VposX=NULL, NposX=NULL, RposX2=NULL, VposX2=NULL, NposX2=NULL;
 
 
 
@@ -63,10 +70,14 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
 {
 
 
-        //creacion de mensajes
 
+      //creacion de mensajes
         std_msgs::String gi;
         std::stringstream si;
+
+  //envia mensajes para dejar siempre el canal enviando
+                        gi.data = si.str();
+                        mov.publish(gi);
 
 //creacion de vectores para reconocer formas
         std::vector<std::vector<cv::Point> > contours;
@@ -88,7 +99,7 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
 
 
 
-        colores[h]="ROSADO"; otro="GO";
+
 
 //si es igual a over es que llego al final del plan
         if(colores[t]=="OVER")
@@ -132,7 +143,7 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
                 if(colores[t]=="ROSADO") { iLowH=160; iLowS=100; iLowV=100; iHighH=179; iHighS=255; iHighV=255; }
                 if(colores[t]=="AMARILLO") { iLowH=15; iLowS=50; iLowV=50; iHighH=40; iHighS=255; iHighV=255; }
                 if(colores[t]=="VERDE") { iLowH=49; iLowS=50; iLowV=50; iHighH=80; iHighS=255; iHighV=255; }
-                if(colores[t]=="ROJO") { iLowH=0; iLowS=100; iLowV=100; iHighH=10; iHighS=255; iHighV=255; }
+                if(colores[t]=="NARANJA") { iLowH=0; iLowS=100; iLowV=100; iHighH=10; iHighS=255; iHighV=255; }
                 if(colores[t]=="AZUL") { iLowH=100; iLowS=65; iLowV=75; iHighH=130; iHighS=255; iHighV=255; }
 
 
@@ -269,12 +280,8 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
                                                 ROS_INFO_STREAM("ROSADO");
 
                                                 //esquivar el color
-
-                                                if(RposX>=162)
-                                                {
-
-                                                        si <<"evitarI";          ROS_INFO_STREAM("izquierda");
-                                                }
+						esquivar_izquierda(RposX);
+                                              
                                         }
 
                                 }
@@ -287,7 +294,7 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
 
                         //VERDE
 
-                        if(vArea > 10000)
+                        else if(vArea > 10000)
                         {
                                 cv::Mat contVERDE = verde.clone();
                                 cv::findContours( contVERDE, contoV, CV_RETR_LIST, CV_CHAIN_APPROX_NONE );
@@ -306,13 +313,8 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
                                                 ROS_INFO_STREAM("verde");
 
 
-
-                                                if(VposX>=162)
-                                                {
-
-                                                        si <<"evitarI";          ROS_INFO_STREAM("izquierda");
-                                                }
-
+						esquivar_izquierda(VposX);
+                                               
                                         }
 
                                 }
@@ -320,12 +322,12 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
 
 
 
-                        //ROJO
+                        //NARANJA
 
-                        if(nArea > 10000)
+                       else  if(nArea > 10000)
                         {
-                                cv::Mat contROJO = rojo.clone();
-                                cv::findContours( contROJO, contoN, CV_RETR_LIST, CV_CHAIN_APPROX_NONE );
+                                cv::Mat contNARANJA = rojo.clone();
+                                cv::findContours( contNARANJA, contoN, CV_RETR_LIST, CV_CHAIN_APPROX_NONE );
 
 
 
@@ -338,32 +340,29 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
                                         {
                                                 cv::drawContours(contourImage, contoN, n, colors[n % 3]);
 
-                                                if(NposX>=162)
-                                                {
-
-                                                        si <<"evitarI";          ROS_INFO_STREAM("izquierda");
-                                                }
+                                               
+						ROS_INFO_STREAM("NARANJA");
+						 esquivar_izquierda(NposX);
                                         }
                                 }
                         }
 
 
 
-//envia los mensajes de esquivacion
-                        gi.data = si.str();
-                        mov.publish(gi);
+
+
 
                 }
 
-                int posX = dM10 / dArea;
-                int posY = dM01 / dArea;
+                x = dM10 / dArea;
+                y = dM01 / dArea;
 
 // if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero
 
                 if (dArea > 10000)
                 {
 
-                       // ROS_INFO_STREAM("canelones");
+                        ROS_INFO_STREAM("canelones");
 
                         //creacion de mensajes
                         std_msgs::String so;
@@ -382,50 +381,18 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
                                 //aproximacion de los lados
                                 cv::approxPolyDP(cv::Mat(contours[idx]), approx, cv::arcLength(cv::Mat(contours[idx]), true)*0.02, true);
 
-                                  ROS_INFO_STREAM(posY);
+                                //  ROS_INFO_STREAM(posY);
 
                                 //si son 4 lados o 5 que estan cerca es un cuadrado (el qbo mira los cuadrados raros)
                                 if(approx.size()==4 || approx.size()==5)
                                 {
 
 
-                                        ROS_INFO_STREAM(posX);
-
-                                        //si esta en ese rango esta en el centro
+                                     //   ROS_INFO_STREAM(x);
 
 
-                                        //esta a la derecha y tiene que moverse a alla
-                                        if(posX>=162)
-                                        {
+                                        centro(x,x2,y,y2);
 
-                                                x = false; y = false;
-                                                centro(x,x2,y,y2);
-                                                ROS_INFO_STREAM("izquierda");
-
-                                                si <<"izquierda";
-                                                gi.data = si.str();
-                                                mov.publish(gi);
-                                        }
-
-
-
-                                        if(posX<=161)
-                                        {
-
-
-                                                x = true; y = false;
-
-                                                centro(x,x2,y,y2);
-
-
-                                        }
-
-                                        if(posY>=218)
-                                        {
-
-                                                y = true; x = false;
-                                                centro(x,x2,y,y2);
-                                        }
 
                                         //dibuja los lados
                                         cv::drawContours(contourImage, contours, idx, colors[idx % 3]);
@@ -459,9 +426,9 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
 
     }
  */
+                cv::imshow("Contours", contourImage);
 
                 //muestra en pantalla los lados
-                cv::imshow("Contours", contourImage);
 
                 //une en una matriz todas las demas
                 imgThresholded = imgThresholded +  rosado +rojo +verde;
@@ -513,34 +480,101 @@ void waypoints(const std_msgs::String::ConstPtr& msg)
 
 }
 
-void centro(bool x, bool x2, bool y, bool y2)
+
+
+void centro(int x, int x2, int y, int y2)
 {
+        //creacion de mensajes
+        std_msgs::String gi;
+        std::stringstream si;
 
         //creacion de mensajes
         std_msgs::String so;
         std::stringstream po;
 
-        if(x==true && x2==true)
+
+//si esta en el rango que se mueva a la izquierda
+        if(x>=132)
         {
+                ROS_INFO_STREAM("izquierda");
 
-                ROS_INFO_STREAM("centro");
-
-                po <<"no";
-                so.data = po.str();
-                mov.publish(so);
+                si <<"izquierda";
+                gi.data = si.str();
 
         }
 
-        if(y==true || y2==true)
+        //esta a la derecha y tiene que moverse a alla
+        if(x2<=128)
+        {
+                ROS_INFO_STREAM("derecha");
+
+                si <<"derecha";
+                gi.data = si.str();
+        }
+
+
+        //si esta en ese rango esta en el centro
+        if(x<=131 && x2>=129)
         {
 
-                ROS_INFO_STREAM("llegue al waypoint");
-                //    t++;
-                po <<"ON";
-                so.data = po.str();
-                ca.publish(so);
+                if(y>=218 || y2>=218)
+                {
 
+                        ROS_INFO_STREAM("llegue al waypoint");
+                        po <<"ON";
+                        so.data = po.str();
+                        ca.publish(so);
+    			 t++;
+
+                }
+
+                else
+                {
+                        ROS_INFO_STREAM("centro");
+
+                        si <<"no";
+                        gi.data = si.str();
+
+                }
         }
+
+        mov.publish(gi);
+
+
+
+}
+
+void esquivar_izquierda(int C1)
+{
+      //creacion de mensajes
+        std_msgs::String gi;
+        std::stringstream si;
+
+	if(C1 >= 132)
+	{
+ 	si <<"evitarI";          ROS_INFO_STREAM("izquierda");
+	}
+   
+   gi.data = si.str();
+   mov.publish(gi);
+
+
+}
+
+void esquivar_derecha(int C2)
+{
+      //creacion de mensajes
+        std_msgs::String gi;
+        std::stringstream si;
+
+	if(C2 < 181)
+	{
+	 si <<"obsDERE";           ROS_INFO_STREAM("derecha");
+	}
+   
+   gi.data = si.str();
+   mov.publish(gi);
+
 
 }
 
@@ -551,6 +585,8 @@ void centro(bool x, bool x2, bool y, bool y2)
 
 void imageLeft(const sensor_msgs::ImageConstPtr& original_image)
 {
+
+
 
 
         //creacion de mensajes
@@ -578,7 +614,7 @@ void imageLeft(const sensor_msgs::ImageConstPtr& original_image)
 
 
 
-        colores[h]="ROSADO"; otro="GO";
+       
 
         //si es igual a over es que llego al final del plan
         if(colores[t]=="OVER")
@@ -622,7 +658,7 @@ void imageLeft(const sensor_msgs::ImageConstPtr& original_image)
                 if(colores[t]=="ROSADO") { iLowH=160; iLowS=100; iLowV=100; iHighH=179; iHighS=255; iHighV=255; }
                 if(colores[t]=="AMARILLO") { iLowH=15; iLowS=50; iLowV=50; iHighH=40; iHighS=255; iHighV=255; }
                 if(colores[t]=="VERDE") { iLowH=49; iLowS=50; iLowV=50; iHighH=80; iHighS=255; iHighV=255; }
-                if(colores[t]=="ROJO") { iLowH=0; iLowS=100; iLowV=100; iHighH=10; iHighS=255; iHighV=255; }
+                if(colores[t]=="NARANJA") { iLowH=0; iLowS=100; iLowV=100; iHighH=10; iHighS=255; iHighV=255; }
                 if(colores[t]=="AZUL") { iLowH=100; iLowS=65; iLowV=75; iHighH=130; iHighS=255; iHighV=255; }
 
 
@@ -758,14 +794,8 @@ void imageLeft(const sensor_msgs::ImageConstPtr& original_image)
 
                                                 ROS_INFO_STREAM("ROSADO");
 
-
                                                 //esquivar el color
-                                                if(RposX<=230)
-                                                {
-
-
-                                                        si <<"obsDERE";           ROS_INFO_STREAM("derecha");
-                                                }
+                                    		esquivar_derecha(RposX);
 
                                         }
 
@@ -798,13 +828,7 @@ void imageLeft(const sensor_msgs::ImageConstPtr& original_image)
                                                 ROS_INFO_STREAM("verde");
 
 
-                                                if(VposX<=190)
-                                                {
-
-
-                                                        si <<"obsDERE";           ROS_INFO_STREAM("derecha");
-                                                }
-
+                                                esquivar_derecha(VposX);
                                         }
 
                                 }
@@ -812,12 +836,12 @@ void imageLeft(const sensor_msgs::ImageConstPtr& original_image)
 
 
 
-                        //ROJO
+                        //NARANJA
 
                         if(nArea > 10000)
                         {
-                                cv::Mat contROJO = rojo.clone();
-                                cv::findContours( contROJO, contoN, CV_RETR_LIST, CV_CHAIN_APPROX_NONE );
+                                cv::Mat contNARANJA = rojo.clone();
+                                cv::findContours( contNARANJA, contoN, CV_RETR_LIST, CV_CHAIN_APPROX_NONE );
 
 
 
@@ -830,33 +854,27 @@ void imageLeft(const sensor_msgs::ImageConstPtr& original_image)
                                         {
                                                 cv::drawContours(contourImage, contoN, n, colors[n % 3]);
 
-                                                if(NposX<=190)
-                                                {
-
-
-                                                        si <<"obsDERE";           ROS_INFO_STREAM("derecha");
-                                                }
-                                        }
+                                                
+					ROS_INFO_STREAM("NARANJA");
+					esquivar_derecha(NposX);
+                                        
+	}
                                 }
                         }
 
 
 
-                        //envia los mensajes de esquivacion
-                        gi.data = si.str();
-                        mov.publish(gi);
-
                 }
 
-                int posX = dM10 / dArea;
-                int posY = dM01 / dArea;
+                x2 = dM10 / dArea;
+                y2 = dM01 / dArea;
 
                 // if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero
 
                 if (dArea > 10000)
                 {
 
-                   //     ROS_INFO_STREAM("canelones");
+                        ROS_INFO_STREAM("canelones");
 
                         //creacion de mensajes
                         std_msgs::String so;
@@ -875,49 +893,18 @@ void imageLeft(const sensor_msgs::ImageConstPtr& original_image)
                                 //aproximacion de los lados
                                 cv::approxPolyDP(cv::Mat(contours[idx]), approx, cv::arcLength(cv::Mat(contours[idx]), true)*0.02, true);
 
-                                ROS_INFO_STREAM(posX);
+                               // ROS_INFO_STREAM("L: "<<x2);
 
                                 //si son 4 lados o 5 que estan cerca es un cuadrado (el qbo mira los cuadrados raros)
+
                                 if(approx.size()==4 || approx.size()==5)
                                 {
 
 
 
-
-                                        //esta a la derecha y tiene que moverse a alla
-                                        if(posX<=158)
-                                        {
-
-                                                x2 = false; y2 = false;
-                                                centro(x,x2,y,y2);
-
-                                                ROS_INFO_STREAM("derecha");
-
-                                                si <<"derecha";
-                                                gi.data = si.str();
-                                                mov.publish(gi);
-                                        }
+                                        centro(x,x2,y,y2);
 
 
-                                        //si esta en ese rango esta en el centro
-                                        if(posX>=159)
-                                        {
-                                                x2 = true; y2 = false;
-                                                //  ROS_INFO_STREAM(x2);
-
-                                                centro(x,x2,y,y2);
-
-
-
-                                        }
-
-                                        if(posY>=218)
-                                        {
-
-                                                x2 = false; y2 = true;
-
-                                                centro(x,x2,y,y2);
-                                        }
 
 
 
@@ -994,6 +981,8 @@ int main(int argc, char **argv)
         ros::NodeHandle nh;
 
 
+ colores[0]="ROSADO"; otro="GO";
+colores[1]="VERDE";
 
         mov = nh.advertise<std_msgs::String>("/semueve", 1000);
         ca = nh.advertise<std_msgs::String>("/vueltitas", 1000);
@@ -1043,7 +1032,8 @@ int main(int argc, char **argv)
          * to ros::shutdown() or a Ctrl-C.
          */
         ros::spin();
-        //ROS_INFO is the replacement for printf/cout.
+
+       //ROS_INFO is the replacement for printf/cout.
         ROS_INFO("tutorialROSOpenCV::Color.cpp::No error.");
 
 }

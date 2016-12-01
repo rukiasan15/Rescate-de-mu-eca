@@ -39,7 +39,7 @@ void observo(const std_msgs::String::ConstPtr& msg)
    ROS_INFO_STREAM("veo un color");
 
    }
- *//*
+ */
         if(largo=="no veo un color")
         {
                 mes.linear.x= 0.0; mes.angular.z=0.0;
@@ -48,8 +48,8 @@ void observo(const std_msgs::String::ConstPtr& msg)
                 moves="NO";
 
         }
- */
-
+ 
+/*
         if(ex=="ON")
         { moves="NO";
           i++;
@@ -57,15 +57,16 @@ void observo(const std_msgs::String::ConstPtr& msg)
           ROS_INFO_STREAM(i);
           mes.linear.x=0.0;
           mes.angular.z=0.5;
-          //  pub.publish(mes);
+          pub.publish(mes);
 
           if(i>10)
           {
-                  if(largo=="no" || largo=="izquierda" || largo=="derecha" || i>200)
+                  if(largo=="no" || largo=="izquierda" || largo=="derecha" || i>400)
                   {i=0;  moves="YES"; ex="OFF"; }
           }}
-
-        if(moves=="YES" && ex=="OFF")
+*/
+        if(moves=="YES" //&& ex=="OFF"
+)
         {
 
                 mes.linear.x=0.1;
@@ -80,16 +81,16 @@ void observo(const std_msgs::String::ConstPtr& msg)
 
                 if(largo=="izquierda")         //izquierda
 
-                { mes.angular.z = 0.5; mes.linear.x=0.1;   ROS_INFO_STREAM("izquierda");  }
+                { mes.angular.z = -0.5; mes.linear.x=0.1;   ROS_INFO_STREAM("izquierda");  }
 
                 if(largo=="derecha")         //derecha
 
-                { mes.angular.z = -0.5; mes.linear.x=0.1;  ROS_INFO_STREAM("derecha"); }
+                { mes.angular.z = 0.5; mes.linear.x=0.1;  ROS_INFO_STREAM("derecha"); }
 
                 if(largo=="no")
                 { mes.angular.z=0.0;  mes.linear.x=0.1; ROS_INFO_STREAM("centro"); }
 
-                //    pub.publish(mes);
+                  pub.publish(mes);
         }
 
 
@@ -104,6 +105,7 @@ void next(const std_msgs::String::ConstPtr& msg)
 }
 
 
+
 void sonar_derecho (const sensor_msgs::PointCloud::ConstPtr& msg)
 {
 
@@ -111,16 +113,20 @@ void sonar_derecho (const sensor_msgs::PointCloud::ConstPtr& msg)
         geometry_msgs::Twist mv;
         //      mv.linear.x=0.1;
 
-        if(ex=="OFF")
-        {  if(dataxD < 0.4 || dataxC < 0.22)
+      if(dataxD < 0.4)
            {
                    ROS_INFO_STREAM("esquivar");
                    moves="NO";
                    mv.angular.z= 0.5;
                    mv.linear.x=0.0;
 
-                   //   pub.publish(mv);
-           }}
+                     pub.publish(mv);
+           }
+
+else
+{
+moves="YES";
+}
 
 }
 void sonar_izquierdo (const sensor_msgs::PointCloud::ConstPtr& msg)
@@ -130,7 +136,7 @@ void sonar_izquierdo (const sensor_msgs::PointCloud::ConstPtr& msg)
         geometry_msgs::Twist mv;
         //    mv.linear.x=0.1;
 
-        if(dataxI < 0.4 && ex=="OFF")
+        if(dataxI < 0.4)
         {
                 ROS_INFO_STREAM("esquivar");
 
@@ -138,19 +144,24 @@ void sonar_izquierdo (const sensor_msgs::PointCloud::ConstPtr& msg)
                 mv.angular.z= -0.5;
                 mv.linear.x=0.0;
 
-                //    pub.publish(mv);
+                  pub.publish(mv);
 
         }
 
+else
+{
+moves="YES";
 }
 
+}
+/*
 void sonar_centro (const sensor_msgs::PointCloud::ConstPtr& msg)
 {
 
         dataxC=msg->points[0].x;
 }
 
-
+*/
 
 
 
@@ -166,6 +177,8 @@ int main(int argc, char ** argv) {
         //estrellita = nh.advertise<std_msgs::String>("/wander", 1000);
 
         //crear subscriber
+    //    ros::Subscriber ver = nh.subscribe("/vueltitas", 1000, next);
+
 
 
         ros::Subscriber muevete = nh.subscribe("/semueve", 1000, observo);
@@ -173,8 +186,8 @@ int main(int argc, char ** argv) {
         //ros::Subscriber acc = nh.subscribe("/accion", 1000, ads);
         ros::Subscriber seDe = nh.subscribe("/distance_sensors_state/front_right_srf10", 1000, sonar_derecho);
         ros::Subscriber seId = nh.subscribe("/distance_sensors_state/front_left_srf10", 1000, sonar_izquierdo);
-        ros::Subscriber seCe = nh.subscribe("/distance_sensors_state/floor_sensor", 1000, sonar_centro);
-        ros::Subscriber ver = nh.subscribe("/vueltitas", 1000, next);
+        //ros::Subscriber seCe = nh.subscribe("/distance_sensors_state/floor_sensor", 1000, sonar_centro);
+
 
 
 

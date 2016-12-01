@@ -362,7 +362,7 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
                 if (dArea > 10000)
                 {
 
-                        ROS_INFO_STREAM("canelones");
+                       
 
                         //creacion de mensajes
                         std_msgs::String so;
@@ -387,7 +387,7 @@ void imageRight(const sensor_msgs::ImageConstPtr& original_image)
                                 if(approx.size()==4 || approx.size()==5)
                                 {
 
-
+ ROS_INFO_STREAM("canelones");
                                      //   ROS_INFO_STREAM(x);
 
 
@@ -492,7 +492,8 @@ void centro(int x, int x2, int y, int y2)
         std_msgs::String so;
         std::stringstream po;
 
-
+ROS_INFO_STREAM(y);
+//ROS_INFO_STREAM(y2);
 //si esta en el rango que se mueva a la izquierda
         if(x>=132)
         {
@@ -517,7 +518,7 @@ void centro(int x, int x2, int y, int y2)
         if(x<=131 && x2>=129)
         {
 
-                if(y>=218 || y2>=218)
+                if(y>=215 || y2>=215)
                 {
 
                         ROS_INFO_STREAM("llegue al waypoint");
@@ -874,7 +875,7 @@ void imageLeft(const sensor_msgs::ImageConstPtr& original_image)
                 if (dArea > 10000)
                 {
 
-                        ROS_INFO_STREAM("canelones");
+                        
 
                         //creacion de mensajes
                         std_msgs::String so;
@@ -901,7 +902,7 @@ void imageLeft(const sensor_msgs::ImageConstPtr& original_image)
                                 {
 
 
-
+ROS_INFO_STREAM("canelones");
                                         centro(x,x2,y,y2);
 
 
@@ -981,8 +982,7 @@ int main(int argc, char **argv)
         ros::NodeHandle nh;
 
 
- colores[0]="ROSADO"; otro="GO";
-colores[1]="VERDE";
+colores[0]="ROSADO", colores[1]="VERDE", otro="GO";
 
         mov = nh.advertise<std_msgs::String>("/semueve", 1000);
         ca = nh.advertise<std_msgs::String>("/vueltitas", 1000);

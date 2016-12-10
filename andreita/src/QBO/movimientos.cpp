@@ -48,7 +48,7 @@ void observo(const std_msgs::String::ConstPtr& msg)
                 moves="NO";
 
         }
- 
+
 /*
         if(ex=="ON")
         { moves="NO";
@@ -111,8 +111,9 @@ void sonar_derecho (const sensor_msgs::PointCloud::ConstPtr& msg)
 
         float dataxD=msg->points[0].x;
         geometry_msgs::Twist mv;
-        //      mv.linear.x=0.1;
-
+        if(ex=="ON")
+         {  mv.linear.x=0.1;
+         }
       if(dataxD < 0.4)
            {
                    ROS_INFO_STREAM("esquivar");
@@ -120,13 +121,18 @@ void sonar_derecho (const sensor_msgs::PointCloud::ConstPtr& msg)
                    mv.angular.z= 0.5;
                    mv.linear.x=0.0;
 
-                     pub.publish(mv);
+                     
            }
 
-else
-{
-moves="YES";
-}
+      else
+      {
+      moves="YES";
+      
+      		mv.linear.x=0.1;
+		mv.angular.z= 0.0;
+      }
+      
+      pub.publish(mv);
 
 }
 void sonar_izquierdo (const sensor_msgs::PointCloud::ConstPtr& msg)
@@ -134,8 +140,9 @@ void sonar_izquierdo (const sensor_msgs::PointCloud::ConstPtr& msg)
 
         float dataxI=msg->points[0].x;
         geometry_msgs::Twist mv;
-        //    mv.linear.x=0.1;
-
+        if(ex=="ON")
+         {  mv.linear.x=0.1;
+         }
         if(dataxI < 0.4)
         {
                 ROS_INFO_STREAM("esquivar");
@@ -144,15 +151,19 @@ void sonar_izquierdo (const sensor_msgs::PointCloud::ConstPtr& msg)
                 mv.angular.z= -0.5;
                 mv.linear.x=0.0;
 
-                  pub.publish(mv);
+                  
 
         }
 
-else
-{
-moves="YES";
-}
-
+        else
+        {
+        moves="YES";
+        
+		mv.linear.x=0.1;
+		mv.angular.z= 0.0;
+                
+        }
+pub.publish(mv);
 }
 /*
 void sonar_centro (const sensor_msgs::PointCloud::ConstPtr& msg)
@@ -177,7 +188,7 @@ int main(int argc, char ** argv) {
         //estrellita = nh.advertise<std_msgs::String>("/wander", 1000);
 
         //crear subscriber
-    //    ros::Subscriber ver = nh.subscribe("/vueltitas", 1000, next);
+       ros::Subscriber ver = nh.subscribe("/vueltitas", 1000, next);
 
 
 
